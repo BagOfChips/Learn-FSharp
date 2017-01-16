@@ -149,7 +149,7 @@ let rec mySqrt2(x, guess, error: float) =
 let newsqrt10 = mySqrt2(10.0, 1.0, 0.0001)
 
 //       //
-// lists //
+// LISTS //
 //       //
 
 let rec badzip(l1, l2) = 
@@ -167,7 +167,7 @@ let l2 = [1..2..9]
 let mergedList = badzip(l1, l2)
 
 //                  // 
-// pattern matching //
+// PATTERN MATCHING //
 //                  //
 
 let rec zip(l1, l2) = 
@@ -179,7 +179,7 @@ let rec zip(l1, l2) =
 let mergedListWMatching = zip(l1, l2)
 
 //                //
-// insertion sort //
+// INSERTION SORT //
 //                //
 
 let rec insert n lst = 
@@ -364,30 +364,35 @@ let rec myfold f v l =
     // args: function 'f', value 'v', list 'l'
 
     // terminating case for recursion:
-        // empty list -> value v
+        // empty list -> value v (return v at the end)
 
     // recursively get first element of list
         // 'next' v becomes f v x
-        // recursively call myfold on sublist 'xs'
+        // recursively call myfold on sublist 'xs' with new v
+            // note that f v x changes the value of v every time
+            // v gets returned at the end
 
-    // not 100% certain about what this actually does
-        // documentation below
-        // summarize later
+    // useful for things like computing summation/averages
 
-(*
-Applies a function to each element of the collection, 
-    threading an accumulator argument through the computation. 
+    // lets use an example to demonstrate how this works
 
-This function takes the second argument, 
-    and applies the function to it and the first element of the list. 
+// example - count the total number of animals 
+let data = [
+    ("Cats", 4);
+    ("Dogs", 5);
+    ("Mice", 3);
+    ("Elephants", 2)
+]
 
-Then, 
-    it passes this result into the function along with the second element, 
-    and so on. 
+let count = myfold (fun acc (nm, x) -> acc + x) 0 data
+printfn "Total number of animals: %d" count
 
-Finally, 
-    it returns the final result. 
+// myfold f 0 data
+// mf f 4 dme
+// mf f 9 me
+// mf f 12 e
+// mf f 14 []
+    // return v = 14
 
-If the input function is f and the elements are i0...iN, 
-    then this function computes f (... (f s i0) i1 ...) iN.
-*)
+
+
