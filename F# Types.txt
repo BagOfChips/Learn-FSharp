@@ -1,0 +1,355 @@
+
+// 			//
+// f# types //
+//			//
+
+basic types
+	int
+	bool
+	string
+	char
+	real
+	
+build compound types
+use type constructors 
+	create new types from old ones 
+	
+	*: product -> : function space 
+	list		| : sum
+
+ignore array, records... for now 
+
+consider
+	*:
+counterpart of the term constructor ( , )
+
+given two types 
+	int & bool 
+
+	define new type 
+		int * bool 
+
+how to connect terms of language & types?
+typing rules
+	f, e, t... for terms
+	A, B for types 
+
+typing rule of form
+	term1: typ1, ..., termk: typk
+	term: typ
+	
+use type vars to have generic rules
+rule for *:
+	t1: T1, t2: T2
+	(t1, t2): T1 * T2
+	
+how to read rule?
+if shown
+	t1 has type T1
+	t2 has type T2
+then pair (t1, t2) has type (T1, T2)
+
+how to start off?
+need basic assumptions for basic types
+
+rules for int:
+	______  _____       _______
+	0: int, 1:int, ..., -1: int, ...
+
+line on top
+indicate no further assumptions
+
+0 has type int
+no assumptions needed to conclude this 
+
+more complicated expressions with more rules
+
+x: int, y: int		x: int, y: int
+______________		______________
+(x + y): int		(x * y): int
+
+rules for bool
+					     b: bool	
+__________  ___________  ___________
+true: bool, false: bool, not b: bool, ...
+
+x: int, y: int
+______________
+(x = y): bool 
+
+rule for conditionals
+
+e1: T, e2: T, b: bool
+_________________________
+(if b then e1 else e2): T
+
+both branches must have same type T
+condition must be boolean 
+then overal conditional will have type T
+
+rules for tuples and projections
+
+t1: T1, t2: T2
+_________________
+(t1, t2): T1 * T2
+
+can use this with any types
+example 
+	17: int, false: bool
+	_______________________
+	(17, false): int * bool
+
+can make nested pins 
+
+(17, false): int * bool, (2 + 3): int
+________________________________________
+((17, false), 2 + 3): (int * bool) * int
+
+we are assigning types to expressions
+not just to values 
+
+understanding pattern matching
+
+match (x, y) with (17, false)
+	
+	(17, false): int * bool
+	_______________________
+	17: int, false: bool
+	
+we have destructors in f#
+
+	(1729, "Handy"): int * string
+	_____________________________
+	fst (1729, "Handy"): int
+	snd (1729, "Handy"): string
+
+type system does not spell out computation rules 
+need different kind of presentation called operational semanties 
+
+example
+	snd (1729, "Handy") -> "Handy"
+
+will not discuss operational semantics
+
+typing "tree"
+
+17: int, true: bool			2: int, 3: int
+___________________         ______________
+(17, bool): int * bool		(2 + 3): int
+________________________________________
+((17, bool), 2 + 3): (int * bool) * int
+
+//
+// lists
+//	
+	
+	list is a type constructor
+	:: is term constructor
+	nil or [] is a constand
+	hd, tl are destructors
+	
+rules
+
+	e: T, l: T-list	
+	________________
+	(e :: l): T-list 
+
+
+	l: T-list		l: T-list
+	_________		_____________
+	hd(l): T		tl(l): T-list
+
+type system will not tell you what happens
+	if apply hd to nil 
+type rule -> says ok 
+	in reality -> exception raised 
+	
+most important type construtor
+	->
+deal with vars first
+need parameter
+
+//
+// how does var get type?
+//
+
+for now
+	assume vars are typed by declarations
+
+later see that polymorphic types can be inferred
+
+need to track declarations when making typing judgements
+
+we have set of assumptions (or declarations)
+	called context 
+
+example
+	we have
+	n: int, x: bool, y: int * int, ...
+	
+	use r for context
+	judgement looks like 
+		(r |- e): T
+	
+using type assumptions in r 
+	conclude that expression e has type T
+	can add these contexts to or previous rules
+
+(r |- e): bool, (r |- e1): T, (r |- e2): T
+_______________________________________
+(r |- if e then e1 else e2): T	
+
+//
+// functions
+//
+
+consider let expression
+	introduces new bindings
+	
+need to manipulate r
+
+	x: T in r
+	__________
+	(r |- x): T
+
+if x: T is one of the assumptions in r
+then one can conclude x: T
+
+now for let
+
+	(r |- e1): T1, (r, x): T1 |- e2: T2
+	_________________________________
+	r |- let x = e1 in e2: T2
+
+x must be fresh in r 
+				
+example						
+		
+x: int |- x: int, x: int |- 2: int 
+________________________________
+								x: int, y: int |- x: int
+								_______________________
+														r |- y: int
+														__________
+	x: int |- x + 2: int			x: int, y: int |- x + y: int
+	_______________________________________________________
+|- 5: int			x: int |- let y = x + 2 in x + y: int
+________________________________________________________
+	|- let x = 5 in (let y = x + 2 in x + y): int 
+	
+order of assumptions do not matter
+	can rearrange order at will
+can reuse assumptions as often as we want 
+
+may have unused assumptions
+example
+	let x = 5 in 3: int
+	we do not need any assumptions about x
+		to check body 3: int 
+
+//
+// -> constructor
+//
+
+if T1, T2 are types then T1 -> T2 is a type
+we have term constructor 
+	fun -> ...
+and destructor (fn application)
+
+rules
+	
+	r, x: T1 + e: T2				r |- e1: T1 -> T2, r |- e2: T1
+	_________________________		______________________________
+	r |- fun x -> e: T1 -> T2		r |- e1, e2: T2
+
+examples of type derivations
+
+x: int |- x: int				x: string |- x: string
+_________________________		_______________________________
+|- fun x -> x: int -> int		|- fun x -> x: string -> string
+
+same expression has multiple types 
+discuss polymorphism later 
+
+think monomorphically for now
+
+examples
+	let x = 1
+	let f = fun u -> u + x
+	let y = 2
+	f y 
+	
+	r = x: int, y: int, u: int, f: int -> int
+	
+typing derivation in pieces 
+	
+	r |- u: int, r |- x: int		r |- f: int -> int, r |- y: int
+	________________________		_______________________________
+	r |- u + x: int					r |- f y: int
+	_____________________________
+	x, ..., y, ..., 
+	|- fun u -> u + x: int -> int
+
+	
+y: int, f: int -> int, x: int |- f y: int, r |- 2:int
+_____________________________________________________
+f: int -> int, x: int |- let y = 2  in f y: int
+	.
+	.
+	.
+_____________________________________
+x: int |- let f = fun u -> u + x: int
+let y = 2 in f y 
+
+// 
+// types for references 
+// 
+
+pretend f# shortcuts are part of core language
+
+expressions ::== ... | e1 := e2 | !e | ref e | () | ...
+
+types ::== ... | T ref | unit | ...
+
+
+r |- e: T				_____________
+_________________		r |- (): unit
+r |- ref e: T ref
+
+r |- e: T ref		r |- e1: T ref, r |- e2: T
+_____________		__________________________
+r |- !e: T			r |- e1 := e2: unit
+
+let increment (x: int ref): unit =	
+	x := !x + 1
+
+r = x: int ref 
+							 r |- x: int ref
+				___________  _______________
+				r |- 1: int, r |- !x: int
+				_________________________
+r |- x: int ref, r |- !x + 1: int
+_________________________________
+r |- x := !x + 1: unit
+__________________________________________________
+|- fun (x: int ref) -> x:= !x + 1: int ref -> unit
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

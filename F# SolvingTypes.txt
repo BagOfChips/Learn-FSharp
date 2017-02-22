@@ -1,0 +1,44 @@
+
+// 							  //
+// SOLVING TYPING CONSTRAINTS //
+//							  //
+
+{a = int -> B, B = B1 * bool, B1 = int}
+	can be solved by 
+	a = int -> (int * bool)
+	B = int * bool
+	B1 = int 
+	
+{a1 -> a2 = int -> B, B = int -> a1}
+	a1 = int 
+	B = int -> int = a2 
+
+use something like gaussian elimination 
+algorithm is called unification
+
+write o for a substitution [T / a] 
+	where T is a type (perhaps with type vars)
+	a is a type variable 
+	
+write [o]T for the effect of carrying out o 
+
+if T1 and T2 are type expressions
+	and o is a substitution 
+	on all the type vars 
+		so o could look like
+		
+		[T1 / a1, T2 / a2, ...]
+		
+		such that [o]T1 = [o]T2 
+		where equality sign means identity 
+		
+	we say that T1 and T2 are unifiable 
+	and o is the unifier
+
+//
+// how to solve contraints?
+//
+
+transform a set of constraints using following rules 
+{C1, C2, ..., Cn, int = int} => {C1, ..., Cn}
+		
